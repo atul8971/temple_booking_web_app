@@ -22,7 +22,27 @@ import {
   SevaBookingStatus,
 } from './types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+// Dynamically determine API base URL based on environment
+const getApiBaseUrl = () => {
+  // First check environment variable
+  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+    return process.env.NEXT_PUBLIC_API_BASE_URL;
+  }
+
+  // In browser, use current hostname if not localhost
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    // If accessing from EC2 public IP or domain, use that same host for API
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return `http://${hostname}:8000`;
+    }
+  }
+
+  // Default to localhost for local development
+  return 'http://localhost:8000';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
